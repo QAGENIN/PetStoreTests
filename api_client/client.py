@@ -26,7 +26,7 @@ class ApiClient:
         self._session = None
 
     @property
-    def session(self):
+    def __session(self):
         """Ленивая инициализация сессии"""
         if self._session is None:
             self._session = requests.Session()
@@ -36,7 +36,7 @@ class ApiClient:
 
     def add_headers(self, headers: Dict[str, str]):
         """Добавляет заголовки к сессии"""
-        self.session.headers.update(headers)
+        self.__session.headers.update(headers)
 
     def _build_url(self, endpoint: str) -> str:
         """Строит полный URL из базового URL и endpoint"""
@@ -46,35 +46,35 @@ class ApiClient:
     def get(self, endpoint: str, params: Optional[Dict[str, Any]] = None, **kwargs) -> Response:
         url = self._build_url(endpoint)
         with allure.step(f'GET request to: {url}'):
-            response = self.session.get(url, params=params, timeout=self.timeout, **kwargs)
+            response = self.__session.get(url, params=params, timeout=self.timeout, **kwargs)
         return response
 
     @allure.step
     def post(self, endpoint: str, data: Optional[Dict[str, Any]] = None, json: Optional[Any] = None, **kwargs) -> Response:
         url = self._build_url(endpoint)
         with allure.step(f'POST request to: {url}'):
-            response = self.session.post(url, data=data, json=json, timeout=self.timeout, **kwargs)
+            response = self.__session.post(url, data=data, json=json, timeout=self.timeout, **kwargs)
         return response
 
     @allure.step
     def put(self, endpoint: str, data: Optional[Dict[str, Any]] = None, json: Optional[Any] = None, **kwargs) -> Response:
         url = self._build_url(endpoint)
         with allure.step(f'PUT request to: {url}'):
-            response = self.session.put(url, data=data, json=json, timeout=self.timeout, **kwargs)
+            response = self.__session.put(url, data=data, json=json, timeout=self.timeout, **kwargs)
         return response
 
     @allure.step
     def delete(self, endpoint: str, **kwargs) -> Response:
         url = self._build_url(endpoint)
         with allure.step(f'DELETE request to: {url}'):
-            response = self.session.delete(url, timeout=self.timeout, **kwargs)
+            response = self.__session.delete(url, timeout=self.timeout, **kwargs)
         return response
 
     @allure.step
     def patch(self, endpoint: str, data: Optional[Dict[str, Any]] = None, json: Optional[Any] = None, **kwargs) -> Response:
         url = self._build_url(endpoint)
         with allure.step(f'PATCH request to: {url}'):
-            response = self.session.patch(url, data=data, json=json, timeout=self.timeout, **kwargs)
+            response = self.__session.patch(url, data=data, json=json, timeout=self.timeout, **kwargs)
         return response
 
     
