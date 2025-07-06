@@ -1,5 +1,4 @@
 import json
-import re
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
@@ -99,19 +98,8 @@ class JsonHelper:
             return json.load(f)
     
     @staticmethod
-    def compare_json(obj1: Any, obj2: Any, ignore_fields: Optional[List[str]] = None) -> bool:
+    def compare_json(obj1: Any, obj2: Any) -> bool:
         """
         Сравнивает два JSON объекта, игнорируя указанные поля
         """
-        if ignore_fields is None:
-            ignore_fields = []
-        
-        def clean_obj(obj):
-            if isinstance(obj, dict):
-                return {k: clean_obj(v) for k, v in obj.items() if k not in ignore_fields}
-            elif isinstance(obj, list):
-                return [clean_obj(item) for item in obj]
-            else:
-                return obj
-        
-        return clean_obj(obj1) == clean_obj(obj2) 
+        return bool({k: v for k, v in obj1.items() if k in obj2 and obj2[k] == v})

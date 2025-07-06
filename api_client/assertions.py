@@ -1,4 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
+
+import allure
 from requests import Response
 import json
 
@@ -7,8 +9,9 @@ class ApiAssertions:
     """
     Базовые утверждения для тестирования API
     """
-    
+
     @staticmethod
+    @allure.step
     def assert_status_code(response: Response, expected_code: Union[int, List[int]]):
         """
         Проверяет статус код ответа

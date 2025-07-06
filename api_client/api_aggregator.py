@@ -7,4 +7,3 @@ class ApiClientAggregator:
 
         self.client = ApiClient(base_url=self._base_url)
         self.asserts = ApiAssertions()
-        self.utils = ResponseHelper()
