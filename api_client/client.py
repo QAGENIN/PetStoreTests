@@ -7,11 +7,7 @@ from petstore_qa.constants.data import HttpMethod, HTTP_MAX_RETRIES, HTTPStatusC
 
 
 class ApiClient:
-    def __init__(
-            self,
-            base_url: str,
-            timeout: int = 30,
-    ):
+    def __init__(self, base_url: str, timeout: int = 30,):
         self._base_url = base_url
         self._timeout = timeout
         self._session = self._session = self.init_session()

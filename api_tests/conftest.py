@@ -3,7 +3,7 @@ from _pytest.fixtures import SubRequest
 
 from petstore_qa.api_aggregator import PetstoreAggregator
 from petstore_qa.constants.annotations import YieldFixture
-from petstore_qa.constants.data import BASE_URL, HTTPStatusCodes
+from petstore_qa.constants.data import BASE_URL
 from petstore_qa.constants.dataclasses import UserModel
 from petstore_qa.constants.generated_data import user_data
 

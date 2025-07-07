@@ -1,6 +1,7 @@
 BASE_URL = "https://petstore.swagger.io/v2/"
 HTTP_MAX_RETRIES = 5
 
+
 class HttpMethod:
     CONNECT = 'CONNECT'
     DELETE = 'DELETE'

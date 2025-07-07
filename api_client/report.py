@@ -1,19 +1,20 @@
-import functools
 import json
 from typing import Union
 
 import allure
 from requests import PreparedRequest, Response
 
-_pretty_json = functools.partial(json.dumps, ensure_ascii=True, indent=4, sort_keys=True)
+
+def pretty_json(obj):
+    return json.dumps(obj, indent=4, sort_keys=True)
 
 
 def _dump_request_body(request: PreparedRequest) -> str:
     if request.body is None:
-        return ''
+        return 'The request body does not exist'
     try:
         request_body = request.body.decode() if isinstance(request.body, bytes) else request.body
-        body = _pretty_json(json.loads(request_body))
+        body = pretty_json(json.loads(request_body))
     except ValueError:
         body = request.body
     return f'Body:\n{body}\n'
@@ -21,14 +22,14 @@ def _dump_request_body(request: PreparedRequest) -> str:
 
 def _dump_response_body(response: Response) -> str:
     try:
-        body = _pretty_json(response.json())
+        body = pretty_json(response.json())
     except ValueError:
         body = response.content
     return f'Body:\n{body}\n'
 
 
 def _dump_headers(obj: Union[PreparedRequest, Response]) -> str:
-    return f'Headers:\n{_pretty_json(dict(obj.headers))}\n'
+    return f'Headers:\n{pretty_json(dict(obj.headers))}\n'
 
 
 def _dump_method(obj: Union[PreparedRequest, Response]) -> str:
