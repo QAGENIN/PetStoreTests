@@ -1,74 +1,62 @@
-import functools
-import time
-from typing import Dict, Any, Optional, Union
-from urllib.parse import urljoin
+from requests import Response, Request, Session
+from requests.adapters import HTTPAdapter
 
-import allure
-from requests import Response, RequestException
-import requests
+from api_client.report import attach_request, attach_response
+from api_client.utils import url_join, has_scheme
+from petstore_qa.constants.data import HttpMethod, HTTP_MAX_RETRIES, HTTPStatusCodes
 
 
 class ApiClient:
-    """
-    Универсальный API клиент
-    """
-    # Добавить ожидание ответа сервера
-    
     def __init__(
-        self,
-        base_url: str,
-        timeout: int = 30,
-        cookie: Optional[Dict[str, str]] = None,
+            self,
+            base_url: str,
+            timeout: int = 30,
     ):
-        self.base_url = base_url
-        self.timeout = timeout
-        self.cookie = cookie
-        self._session = None
+        self._base_url = base_url
+        self._timeout = timeout
+        self._session = self._session = self.init_session()
 
-    @property
-    def __session(self):
-        """Ленивая инициализация сессии"""
-        if self._session is None:
-            self._session = requests.Session()
-        return self._session
+    @staticmethod
+    def init_session() -> Session:
+        session = Session()
+        session.mount('https://', HTTPAdapter(max_retries=HTTP_MAX_RETRIES))
+        session.mount('http://', HTTPAdapter(max_retries=HTTP_MAX_RETRIES))
+        return session
 
-    def _build_url(self, endpoint: str) -> str:
-        """Строит полный URL из базового URL и endpoint"""
-        return urljoin(self.base_url, endpoint.lstrip("/"))
+    def _prepare_request(self, method: str, url: str, raise_for_status: bool = True, **kwargs) -> Response:
+        request = Request(method=method, url=url, **kwargs)
 
-    @allure.step
-    def get(self, endpoint: str, params: Optional[Dict[str, Any]] = None, **kwargs) -> Response:
-        url = self._build_url(endpoint)
-        with allure.step(f'GET request to: {url}'):
-            response = self.__session.get(url, params=params, timeout=self.timeout, **kwargs)
+        if has_scheme(request.url):
+            raise ValueError(f'request.url must be relative, but got: {request.url}')
+
+        request.url = url_join(self._base_url, request.url)
+
+        prepared_request = self._session.prepare_request(request)
+        attach_request(prepared_request)
+        for attempt in range(HTTP_MAX_RETRIES):
+            response = self._session.send(prepared_request, timeout=self._timeout, verify=False)
+            if response.status_code in HTTPStatusCodes.SUCCESS:
+                break
+
+        attach_response(response)
+        if raise_for_status:
+            response.raise_for_status()
         return response
 
-    @allure.step
-    def post(self, endpoint: str, data: Optional[Dict[str, Any]] = None, json: Optional[Any] = None, **kwargs) -> Response:
-        url = self._build_url(endpoint)
-        with allure.step(f'POST request to: {url}'):
-            response = self.__session.post(url, data=data, json=json, timeout=self.timeout, **kwargs)
-        return response
+    def delete(self, path: str, raise_for_status: bool = True, **kwargs) -> Response:
+        return self._prepare_request(method=HttpMethod.DELETE, url=path, raise_for_status=raise_for_status, **kwargs)
 
-    @allure.step
-    def put(self, endpoint: str, data: Optional[Dict[str, Any]] = None, json: Optional[Any] = None, **kwargs) -> Response:
-        url = self._build_url(endpoint)
-        with allure.step(f'PUT request to: {url}'):
-            response = self.__session.put(url, data=data, json=json, timeout=self.timeout, **kwargs)
-        return response
+    def get(self, path: str, raise_for_status: bool = True, **kwargs) -> Response:
+        return self._prepare_request(method=HttpMethod.GET, url=path, raise_for_status=raise_for_status, **kwargs)
 
-    @allure.step
-    def delete(self, endpoint: str, **kwargs) -> Response:
-        url = self._build_url(endpoint)
-        with allure.step(f'DELETE request to: {url}'):
-            response = self.__session.delete(url, timeout=self.timeout, **kwargs)
-        return response
+    def patch(self, path: str, raise_for_status: bool = True, **kwargs) -> Response:
+        return self._prepare_request(method=HttpMethod.PATCH, url=path, raise_for_status=raise_for_status, **kwargs)
 
-    @allure.step
-    def patch(self, endpoint: str, data: Optional[Dict[str, Any]] = None, json: Optional[Any] = None, **kwargs) -> Response:
-        url = self._build_url(endpoint)
-        with allure.step(f'PATCH request to: {url}'):
-            response = self.__session.patch(url, data=data, json=json, timeout=self.timeout, **kwargs)
-        return response
+    def post(self, path: str, raise_for_status: bool = True, **kwargs) -> Response:
+        return self._prepare_request(method=HttpMethod.POST, url=path, raise_for_status=raise_for_status, **kwargs)
 
-    
+    def put(self, path: str, raise_for_status: bool = True, **kwargs) -> Response:
+        return self._prepare_request(method=HttpMethod.PUT, url=path, raise_for_status=raise_for_status, **kwargs)
+
+    def options(self, path: str, raise_for_status: bool = True, **kwargs) -> Response:
+        return self._prepare_request(method=HttpMethod.OPTIONS, url=path, raise_for_status=raise_for_status, **kwargs)

@@ -1,4 +1,16 @@
 BASE_URL = "https://petstore.swagger.io/v2/"
+HTTP_MAX_RETRIES = 5
+
+class HttpMethod:
+    CONNECT = 'CONNECT'
+    DELETE = 'DELETE'
+    GET = 'GET'
+    HEAD = 'HEAD'
+    OPTIONS = 'OPTIONS'
+    PATCH = 'PATCH'
+    POST = 'POST'
+    PUT = 'PUT'
+    TRACE = 'TRACE'
 
 
 class HTTPStatusCodes:
@@ -11,6 +23,7 @@ class HTTPStatusCodes:
     CREATED = 201
     ACCEPTED = 202
     NO_CONTENT = 204
+    SUCCESS = [OK, CREATED, ACCEPTED, NO_CONTENT]
 
     # Redirection (3xx)
     MOVED_PERMANENTLY = 301

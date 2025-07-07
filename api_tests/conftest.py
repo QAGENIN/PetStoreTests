@@ -1,18 +1,26 @@
 import pytest
+from _pytest.fixtures import SubRequest
 
-from api_client.api_aggregator import ApiClientAggregator
-from constants.data import BASE_URL, HTTPStatusCodes
-from constants.dataclasses import UserModel
-from constants.endpoints import Endpoints
-from constants.hardcoded_data import user_data
+from petstore_qa.api_aggregator import PetstoreAggregator
+from petstore_qa.constants.annotations import YieldFixture
+from petstore_qa.constants.data import BASE_URL, HTTPStatusCodes
+from petstore_qa.constants.dataclasses import UserModel
+from petstore_qa.constants.generated_data import user_data
 
 
 @pytest.fixture(scope="session", autouse=True)
-def api_client():
-    return ApiClientAggregator(base_url=BASE_URL)
+def petstore():
+    return PetstoreAggregator(base_url=BASE_URL)
+
 
 @pytest.fixture
-def create_default_user(api_client: ApiClientAggregator) -> UserModel:
-    response = api_client.client.post(Endpoints.USER, json=user_data.to_dict())
-    api_client.asserts.assert_status_code(response, HTTPStatusCodes.OK)
+def creating_default_user(petstore: PetstoreAggregator) -> UserModel:
+    petstore.steps.create_user(user_data)
     return user_data
+
+
+@pytest.fixture
+def deleting_user(request: SubRequest, petstore: PetstoreAggregator) -> YieldFixture[None]:
+    user = request.param
+    yield
+    petstore.steps.delete_user(user.username)
