@@ -8,7 +8,7 @@ from petstore_qa.constants.dataclasses import UserModel
 from petstore_qa.constants.generated_data import user_data
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def petstore():
     return PetstoreAggregator(base_url=BASE_URL)
 
