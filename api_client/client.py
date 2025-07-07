@@ -16,7 +16,6 @@ class ApiClient:
     def init_session() -> Session:
         session = Session()
         session.mount('https://', HTTPAdapter(max_retries=HTTP_MAX_RETRIES))
-        session.mount('http://', HTTPAdapter(max_retries=HTTP_MAX_RETRIES))
         return session
 
     def _prepare_request(self, method: str, url: str, raise_for_status: bool = True, **kwargs) -> Response:
